@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-deployment
+  labels:
+    app: agentService
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: agentService
+  template:
+    metadata:
+      labels:
+        app: agentService
+    spec:
+      containers:
+        - name: agentService
+          image: <your_ecr_reopository>:<your_image_tag>
+          ports:
+            - containerPort: 8000

@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-deployment
+  labels:
+    app: notificationService
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: notificationService
+  template:
+    metadata:
+      labels:
+        app: notificationService
+    spec:
+      containers:
+        - name: notificationService
+          image: <your_ecr_reopository>:<your_image_tag>
+          ports:
+            - containerPort: 8002
