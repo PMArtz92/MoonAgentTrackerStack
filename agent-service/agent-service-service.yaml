@@ -2,9 +2,11 @@ apiVersion: v1
 kind: Service
 metadata:
   name: agent-service
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
 spec:
   selector:
-    app: agentService
+    app: agent-service
   ports:
     - protocol: TCP
       port: 80

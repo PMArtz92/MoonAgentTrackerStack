@@ -1,21 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: agent-deployment
-  labels:
-    app: agentService
+  name: agent-service-deployment
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: agentService
+      app: agent-service
   template:
     metadata:
       labels:
-        app: agentService
+        app: agent-service
     spec:
       containers:
-        - name: agentService
-          image: <your_ecr_reopository>:<your_image_tag>
+        - name: agent-service
+          image: 924918964891.dkr.ecr.ap-southeast-1.amazonaws.com/agent-service:latest
           ports:
             - containerPort: 8000
