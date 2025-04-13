@@ -1,0 +1,66 @@
+name: Deploy Microservices to EKS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "agent-service/**"
+      - "integration-service/**"
+      - "notification-service/**"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - name: agent-service
+            path: agent-service
+            port: 8000
+            ecr: agent-service
+
+          - name: integration-service
+            path: integration-service
+            port: 8001
+            ecr: integration-service
+
+          - name: notification-service
+            path: notification-service
+            port: 8002
+            ecr: notification-service
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.path }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Build and push Docker image
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+        run: |
+          docker build -t $ECR_REGISTRY/${{ matrix.ecr }}:$IMAGE_TAG .
+          docker push $ECR_REGISTRY/${{ matrix.ecr }}:$IMAGE_TAG
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig --name ${{ secrets.CLUSTER_NAME }} --region ${{ secrets.AWS_REGION }}
+
+      - name: Patch deployment image
+        run: |
+          kubectl set image deployment/${{ matrix.name }}-deployment ${{ matrix.name }}=$ECR_REGISTRY/${{ matrix.ecr }}:$IMAGE_TAG --record
