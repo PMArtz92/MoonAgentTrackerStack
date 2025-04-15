@@ -11,7 +11,7 @@ jobs:
 
     env:
       AWS_REGION: ap-southeast-1
-      ECR_REGISTRY: <your_aws_account_id>.dkr.ecr.ap-southeast-1.amazonaws.com
+      ECR_REGISTRY: 924918964891.dkr.ecr.ap-southeast-1.amazonaws.com
       IMAGE_TAG: ${{ github.sha }}
 
     steps:
