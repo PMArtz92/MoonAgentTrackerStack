@@ -65,10 +65,8 @@ jobs:
         run: |
           aws eks update-kubeconfig \
             --region ap-southeast-1 \
-            --name moon-insurance
-
-      - name: Verify kubectl access
-        run: kubectl get nodes
+            --name moon-insurance \
+            --role-arn arn:aws:iam::924918964891:role/GitHubActionsEKSDeployRole
 
       - name: Patch deployment image in EKS
         env:
