@@ -68,9 +68,6 @@ jobs:
             --name moon-insurance
 
       - name: Patch deployment image in EKS
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           kubectl set image deployment/${{ matrix.name }}-deployment \
             ${{ matrix.name }}=$ECR_REGISTRY/${{ matrix.ecr }}:$IMAGE_TAG
