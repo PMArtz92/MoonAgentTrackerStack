@@ -1,5 +1,5 @@
 # Use an official lightweight Python image as a parent image
-FROM python:3.9-slim
+FROM public.ecr.aws/docker/library/python:3.9-slim
 
 # Set the working directory in the container
 WORKDIR /app
