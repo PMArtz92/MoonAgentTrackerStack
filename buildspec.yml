@@ -15,10 +15,6 @@ phases:
       - curl -o kubectl https://s3.amazonaws.com/amazon-eks/1.27.3/2023-07-05/bin/linux/amd64/kubectl
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/
-      - echo Installing AWS CLI...
-      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      - unzip awscliv2.zip
-      - sudo ./aws/install
 
   pre_build:
     commands:
