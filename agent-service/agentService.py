@@ -20,7 +20,7 @@ agents = [
     },
         {
         "agent_code": 3,
-        "name": "Kim 5r555 Kate",
+        "name": "Kim 5rtt55 Kate",
         "age": 23,
         "gender": "Female",       
         "products":["Life Insurance", "Health Insurance", "Car Insurance", "Travel Insurance"],
