@@ -4,23 +4,45 @@ env:
   variables:
     IMAGE_TAG: latest
     REPO_NAME: agent-service
-    AWS_REGION: ap-southeast-1
     ECR_REGISTRY: 924918964891.dkr.ecr.ap-southeast-1.amazonaws.com
+    CLUSTER_NAME: moon-insurance
+    AWS_REGION: ap-southeast-1
 
 phases:
+  install:
+    runtime-versions:
+      docker: 20
+    commands:
+      - echo Installing kubectl...
+      - curl -o kubectl https://s3.amazonaws.com/amazon-eks/1.27.3/2023-07-05/bin/linux/amd64/kubectl
+      - chmod +x ./kubectl
+      - mv ./kubectl /usr/local/bin/
+      - echo Installing AWS CLI...
+      - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      - unzip awscliv2.zip
+      - sudo ./aws/install
+
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
       - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
+
   build:
     commands:
-      - echo Building the Docker image...
+      - echo Building Docker image...
       - docker build -t $REPO_NAME:$IMAGE_TAG ./agent-service
       - docker tag $REPO_NAME:$IMAGE_TAG $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG
+
   post_build:
     commands:
-      - echo Pushing the Docker image to ECR...
+      - echo Pushing Docker image to ECR...
       - docker push $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG
+
+      - echo Updating kubeconfig...
+      - aws eks update-kubeconfig --region $AWS_REGION --name $CLUSTER_NAME
+
+      - echo Deploying updated image to EKS...
+      - kubectl set image deployment/agent-service-deployment agent-service=$ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG -n default
 
 artifacts:
   files:
