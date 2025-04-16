@@ -15,7 +15,7 @@ phases:
       - curl -LO "https://s3.us-west-2.amazonaws.com/amazon-eks/2023-11-07/bin/linux/amd64/kubectl"
       - chmod +x ./kubectl
       - mv ./kubectl /usr/local/bin/
-      - echo Skipping AWS CLI install because it's already available
+      - echo "Skipping AWS CLI install because it's already available"
 
   pre_build:
     commands:
