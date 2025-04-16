@@ -4,32 +4,23 @@ env:
   variables:
     IMAGE_TAG: latest
     REPO_NAME: agent-service
+    AWS_REGION: ap-southeast-1
     ECR_REGISTRY: 924918964891.dkr.ecr.ap-southeast-1.amazonaws.com
-    CLUSTER_NAME: moon-insurance
-    DEPLOYMENT_NAME: agent-service-deployment
-    CONTAINER_NAME: agent-service
-    REGION: ap-southeast-1
 
 phases:
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
-      - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
-      - echo Setting image tag to Git commit...
-      - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
-      - echo IMAGE_TAG=$IMAGE_TAG
+      - aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
   build:
     commands:
-      - echo Building Docker image...
+      - echo Building the Docker image...
       - docker build -t $REPO_NAME:$IMAGE_TAG ./agent-service
       - docker tag $REPO_NAME:$IMAGE_TAG $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG
   post_build:
     commands:
-      - echo Pushing Docker image to ECR...
+      - echo Pushing the Docker image to ECR...
       - docker push $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG
-      - echo Updating image on EKS...
-      - aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
-      - kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=$ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG --record
 
 artifacts:
   files:
