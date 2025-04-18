@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: agent-service
-          image: 924918964891.dkr.ecr.ap-southeast-1.amazonaws.com/agent-service:latest
+          image: 445162103425.dkr.ecr.ap-southeast-2.amazonaws.com/agent-service:latest
           ports:
             - containerPort: 8000
