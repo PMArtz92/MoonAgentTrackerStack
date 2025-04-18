@@ -1,50 +1,72 @@
-name: Deploy Agent Service to EKS
+name: Build & Deploy All Services to EKS
 
 on:
   push:
     branches: [main]
     paths:
       - "agent-service/**"
-      - ".github/workflows/deploy-agent.yml"
+      - "integration-service/**"
+      - "notification-service/**"
+      - ".github/workflows/deploy.yml"
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   deploy:
     name: Build & Deploy to EKS
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
 
-    environment: production
+    env:
+      AWS_REGION: ap-southeast-2
+      ECR_REGISTRY: 445162103425.dkr.ecr.ap-southeast-2.amazonaws.com
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::445162103425:role/GitHubActionsEKSDeployRole
           role-session-name: github-eks-session
-          aws-region: ap-southeast-2
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Login to Amazon ECR
-        id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Build, tag, and push Docker image
-        env:
-          ECR_REGISTRY: 445162103425.dkr.ecr.ap-southeast-2.amazonaws.com
-          ECR_REPOSITORY: agent-service
-          IMAGE_TAG: latest
+      - name: Build & push agent-service
         run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG ./agent-service
-          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker buildx create --use || true
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t $ECR_REGISTRY/agent-service:latest ./agent-service \
+            --push
 
-      - name: Update kubeconfig
+      - name: Build & push integration-service
         run: |
-          aws eks update-kubeconfig --name moonagent-cluster --region ap-southeast-2
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t $ECR_REGISTRY/integration-service:latest ./integration-service \
+            --push
 
-      - name: Deploy to EKS
+      - name: Build & push notification-service
+        run: |
+          docker buildx build --platform linux/amd64,linux/arm64 \
+            -t $ECR_REGISTRY/notification-service:latest ./notification-service \
+            --push
+
+      - name: Update kubeconfig for EKS
+        run: |
+          aws eks update-kubeconfig --name moonagent-cluster --region $AWS_REGION
+
+      - name: Restart agent-service deployment
         run: |
           kubectl rollout restart deployment agent-service-deployment
+
+      - name: Restart integration-service deployment
+        run: |
+          kubectl rollout restart deployment integration-service-deployment
+
+      - name: Restart notification-service deployment
+        run: |
+          kubectl rollout restart deployment notification-service-deployment
