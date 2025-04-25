@@ -6,7 +6,7 @@ app = Flask(__name__)
 agents = [
     {
         "agent_code": 1,
-        "name": "John 5566 Doe",
+        "name": "John  Doe",
         "age": 30,
         "gender": "Male",
         "products":["Life Insurance", "Health Insurance"],
