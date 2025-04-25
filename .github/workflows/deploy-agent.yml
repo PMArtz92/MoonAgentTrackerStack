@@ -61,7 +61,7 @@ jobs:
 
       - name: Restart agent-service deployment
         run: |
-          kubectl rollout restart deployment agent-service-deployment
+          kubectl delete pod -l app=agent-service
 
       - name: Restart integration-service deployment
         run: |
